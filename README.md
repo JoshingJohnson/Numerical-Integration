@@ -1,7 +1,7 @@
 # Numerical Integration
 
 ## Installation:
-1. Download and open the zip file from the releases at https://github.com/JoshingJohnson/Numerical-Integration/releases/tag/Install
+1. Download the latest release from https://github.com/JoshingJohnson/Numerical-Integration/releases/tag/Install and open the zip file
 2. Run the setup
 
 ## Features:
