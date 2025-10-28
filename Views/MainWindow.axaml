@@ -1,0 +1,73 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Numerical_Integration.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Numerical_Integration.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+		xmlns:ScottPlot="clr-namespace:ScottPlot.Avalonia;assembly=ScottPlot.Avalonia"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="Numerical_Integration">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="2*" />
+			<!-- Graph panel -->
+			<ColumnDefinition Width="*" />
+			<!-- Controls panel -->
+		</Grid.ColumnDefinitions>
+
+		<!-- Graph Panel -->
+		<Border Grid.Column="0" Background="White" CornerRadius="8" BorderBrush="#3F0071" BorderThickness="2" Padding="4">
+			<ScottPlot:AvaPlot Name="FunctionPlot"/>
+		</Border>
+
+		<!-- Controls Panel -->
+		<StackPanel Grid.Column="1" Background="Black" VerticalAlignment="Stretch" Margin="10,10,0,0">
+			<TextBlock Text="Function:"/>
+			<TextBox BorderBrush="#3F0071" Name="InputName" Text="{Binding InputFunction}"/>
+
+			<TextBlock Text="X Start:" Margin="0,5,0,0"/>
+			<TextBox BorderBrush="#3F0071" Text="{Binding InputXStart}"/>
+
+			<TextBlock Text="X End:" Margin="0,5,0,0"/>
+			<TextBox BorderBrush="#3F0071" Text="{Binding InputXEnd}"/>
+
+			<TextBlock Text="N Value:" Margin="0,5,0,0"/>
+			<TextBox BorderBrush="#3F0071" Text="{Binding InputN}"/>
+
+			<Button BorderBrush="#3F0071" Content="Plot" Command="{Binding FunctionButton}" Margin="0,10,0,0"/>
+
+			<StackPanel Orientation="Vertical" Spacing="4" Margin="0,10,0,0">
+				<Button BorderBrush="#3F0071" Name="ShowButton" Content="Show..." Width="200" Command="{Binding TogglePopupCommand}" />
+				<Popup IsOpen="{Binding IsPopupOpen}" PlacementTarget="{Binding ElementName=ShowButton}" PlacementMode="Bottom" IsLightDismissEnabled="True">
+					<Border Background="Black" BorderBrush="#3F0071" BorderThickness="2" CornerRadius="6" Padding="6">
+						<StackPanel>
+							<CheckBox Content="X Axis" IsChecked="{Binding ShowXaxis}"/>
+							<CheckBox Content="Y Axis" IsChecked="{Binding ShowYaxis}"/>
+							<CheckBox Content="Function" IsChecked="{Binding ShowFunction}"/>
+							<CheckBox Content="Rectangle" IsChecked="{Binding ShowRectangle}"/>
+							<CheckBox Content="Rectangle Error" IsChecked="{Binding ShowRectangleError}"/>
+							<CheckBox Content="Trapezoid" IsChecked="{Binding ShowTrapezoid}"/>
+							<CheckBox Content="Trapezoid Error" IsChecked="{Binding ShowTrapezoidError}"/>
+							<CheckBox Content="Simpson" IsChecked="{Binding ShowSimpson}"/>
+							<CheckBox Content="Simpson Error" IsChecked="{Binding ShowSimpsonError}"/>
+							<CheckBox Content="Hit-Miss Monte Carlo" IsChecked="{Binding ShowHitMiss}"/>
+							<CheckBox Content="Hit-Miss Monte Carlo Error" IsChecked="{Binding ShowHitMissError}"/>
+							<CheckBox Content="Traditional Monte Carlo" IsChecked="{Binding ShowTraditional}"/>
+							<CheckBox Content="Traditional Monte Carlo Error" IsChecked="{Binding ShowTraditionalError}"/>
+							<CheckBox Content="Bestest Integral" IsChecked="{Binding ShowBestestIntegral}"/>
+						</StackPanel>
+					</Border>
+				</Popup>
+			</StackPanel>
+		</StackPanel>
+	</Grid>
+</Window>
