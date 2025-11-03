@@ -9,4 +9,4 @@
 ### -A best integral is found which is used for error plotting
 ### -The function and the limit can be input
 ### -An exportable graph which can display many togglable plots
-### -This is unfinished, so features are lacking such as Inputing logarithms and pi.
+### -I'm looking forward to updating this program further in the future :)
