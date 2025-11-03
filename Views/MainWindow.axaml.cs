@@ -152,7 +152,7 @@ namespace Numerical_Integration.Views
             return y;
         }
 
-        // Evaluates a single term (handles multiplication, division, powers, sin, cos, etc.)
+        // Evaluates a single term
         static double[] EvaluateTerm(double[] x, string term)
         {
             double[] y = new double[x.Length];
@@ -234,7 +234,7 @@ namespace Numerical_Integration.Views
                     continue;
                 }
 
-                // Handle exponential constants (e or e^...)
+                // Handle e constant (e or e^...)
                 if (c == 'e')
                 {
                     if (i + 1 < term.Length && term[i + 1] == '^')
@@ -269,8 +269,69 @@ namespace Numerical_Integration.Views
                     continue;
                 }
 
+                // Handle pi constant
+                if (i+1 < term.Length && term.Substring(i,2) == "pi")
+                {
+                    if (i + 2 < term.Length && term[i + 2] == '^')
+                    {
+                        int expStart = i + 3;
+                        if (expStart < term.Length && term[expStart] == '(')
+                        {
+                            int expEnd = FindCloseBracket(expStart, term);
+                            string inner = term.Substring(expStart + 1, expEnd - expStart - 1);
+                            double[] innerVal = EvaluateFunction(x, inner);
+                            for (int pos = 0; pos < x.Length; pos++)
+                                y[pos] *= Math.Pow(Math.PI, innerVal[pos]);
+                            i = expEnd + 1;
+                        }
+                        else
+                        {
+                            int numStart = expStart;
+                            while (numStart < term.Length && (char.IsDigit(term[numStart]) || term[numStart] == '.'))
+                                numStart++;
+                            double power = double.Parse(term.Substring(expStart, numStart - expStart));
+                            for (int pos = 0; pos < x.Length; pos++)
+                                y[pos] *= Math.Pow(Math.PI, power);
+                            i = numStart;
+                        }
+                    }
+                    else
+                    {
+                        for (int pos = 0; pos < x.Length; pos++)
+                            y[pos] *= Math.PI;
+                        i+=2;
+                    }
+                    continue;
+                }
+
+                // Handle log()
+                if (i+2 < term.Length && term.Substring(i,3) == "log")
+                {
+                    int open = i + 3;
+                    int close = FindCloseBracket(open, term);
+                    string inner = term.Substring(open + 1, close - open - 1);
+                    double[] innerVal = EvaluateFunction(x, inner);
+                    for (int pos = 0; pos < x.Length; pos++)
+                        y[pos] *= Math.Log10(innerVal[pos]);
+                    i = close + 1;
+                    continue;
+                }
+
+                // Handle ln()
+                if (i+1 < term.Length && term.Substring(i,2) == "ln")
+                {
+                    int open = i + 2;
+                    int close = FindCloseBracket(open, term);
+                    string inner = term.Substring(open + 1, close - open - 1);
+                    double[] innerVal = EvaluateFunction(x, inner);
+                    for (int pos = 0; pos < x.Length; pos++)
+                        y[pos] *= Math.Log(innerVal[pos]);
+                    i = close + 1;
+                    continue;
+                }
+               
                 // Handle functions sin(), cos(), tan()
-                if (i + 3 < term.Length && term.Substring(i, 3) == "sin")
+                if (i + 2 < term.Length && term.Substring(i, 3) == "sin")
                 {
                     int open = i + 3;
                     int close = FindCloseBracket(open, term);
@@ -282,7 +343,7 @@ namespace Numerical_Integration.Views
                     continue;
                 }
 
-                if (i + 3 < term.Length && term.Substring(i, 3) == "cos")
+                if (i + 2 < term.Length && term.Substring(i, 3) == "cos")
                 {
                     int open = i + 3;
                     int close = FindCloseBracket(open, term);
@@ -294,7 +355,7 @@ namespace Numerical_Integration.Views
                     continue;
                 }
 
-                if (i + 3 < term.Length && term.Substring(i, 3) == "tan")
+                if (i + 2 < term.Length && term.Substring(i, 3) == "tan")
                 {
                     int open = i + 3;
                     int close = FindCloseBracket(open, term);
@@ -333,17 +394,7 @@ namespace Numerical_Integration.Views
                     }
                     continue;
                 }
-
-                // Handle multiplication symbols explicitly (optional)
-                if (c == '*')
-                {
-                    i++;
-                    continue;
-                }
-
-                throw new InvalidOperationException($"Unexpected character '{c}' in expression.");
             }
-
             return y;
         }
 
