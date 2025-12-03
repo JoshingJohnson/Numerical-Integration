@@ -32,20 +32,25 @@ namespace Numerical_Integration.Views
         {
             if (DataContext is MainWindowViewModel vm)
             {
-                vm.FunctionButton.Subscribe(result =>
+                vm.FunctionButton.Subscribe(functionInputs =>
                 {
-                    Debug.WriteLine($"VIEW received: {result.Function}");
-                    string functionString = result.Function;
-                    int xStart = result.XStart;
-                    int xEnd = result.XEnd;
-                    int N = result.N;
+                    foreach (var fi in functionInputs)
+                    {
+                        int xStart = fi.XStart;
+                        int xEnd = fi.XEnd;
+                        string func = fi.Function;
 
-                    double[] x = new double[xEnd-xStart+1];
-                    for (int i = 0; i <= xEnd-xStart; i++)
-                        x[i] = i+xStart;
-                    HeldValues.FunctionX= x;
-                    HeldValues.FunctionY= EvaluateFunction(x, functionString);
-                    NumericalIntegration(xStart, xEnd, functionString, N);
+                        double[] x = new double[xEnd - xStart + 1];
+                        for (int i = 0; i < x.Length; i++)
+                            x[i] = xStart + i;
+
+                        HeldValues.FunctionX = x;
+                        HeldValues.FunctionY = EvaluateFunction(x, func);
+
+                        int n = int.TryParse(vm.InputN, out int NValue) ? NValue : 1;
+                        NumericalIntegration(xStart, xEnd, func, n);
+                    }
+
                     UpdatePlot(vm);
                 });
                 Observable.Merge(
@@ -54,14 +59,19 @@ namespace Numerical_Integration.Views
                     vm.WhenAnyValue(x => x.ShowFunction).Select(_ => Unit.Default),
                     vm.WhenAnyValue(x => x.ShowRectangle).Select(_ => Unit.Default),
                     vm.WhenAnyValue(x => x.ShowRectangleError).Select(_ => Unit.Default),
+                    vm.WhenAnyValue(x => x.ShowRectangleErrorLog).Select(_ => Unit.Default),
                     vm.WhenAnyValue(x => x.ShowTrapezoid).Select(_ => Unit.Default),
                     vm.WhenAnyValue(x => x.ShowTrapezoidError).Select(_ => Unit.Default),
+                    vm.WhenAnyValue(x => x.ShowTrapezoidErrorLog).Select(_ => Unit.Default),
                     vm.WhenAnyValue(x => x.ShowSimpson).Select(_ => Unit.Default),
                     vm.WhenAnyValue(x => x.ShowSimpsonError).Select(_ => Unit.Default),
+                    vm.WhenAnyValue(x => x.ShowSimpsonErrorLog).Select(_ => Unit.Default),
                     vm.WhenAnyValue(x => x.ShowHitMiss).Select(_ => Unit.Default),
                     vm.WhenAnyValue(x => x.ShowHitMissError).Select(_ => Unit.Default),
+                    vm.WhenAnyValue(x => x.ShowHitMissErrorLog).Select(_ => Unit.Default),
                     vm.WhenAnyValue(x => x.ShowTraditional).Select(_ => Unit.Default),
                     vm.WhenAnyValue(x => x.ShowTraditionalError).Select(_ => Unit.Default),
+                    vm.WhenAnyValue(x => x.ShowTraditionalErrorLog).Select(_ => Unit.Default),
                     vm.WhenAnyValue(x => x.ShowBestestIntegral).Select(_ => Unit.Default)
                 ).Subscribe(_ => UpdatePlot(vm));
             }
@@ -75,14 +85,19 @@ namespace Numerical_Integration.Views
             if (vm.ShowFunction && HeldValues.FunctionX != null) FunctionPlot.Plot.Add.Scatter(HeldValues.FunctionX, HeldValues.FunctionY);
             if (vm.ShowRectangle) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.RectangleEstimate);
             if (vm.ShowRectangleError) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.RectangleEstimateError);
+            if (vm.ShowRectangleErrorLog) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.RectangleEstimateErrorLog);
             if (vm.ShowTrapezoid) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.TrapezoidEstimate);
             if (vm.ShowTrapezoidError) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.TrapezoidEstimateError);
+            if (vm.ShowTrapezoidErrorLog) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.TrapezoidEstimateErrorLog);
             if (vm.ShowSimpson) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.SimpsonEstimate);
             if (vm.ShowSimpsonError) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.SimpsonEstimateError);
+            if (vm.ShowSimpsonErrorLog) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.SimpsonEstimateErrorLog);
             if (vm.ShowHitMiss) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.HitMissMonteCarloEstimate);
             if (vm.ShowHitMissError) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.HitMissMonteCarloEstimateError);
+            if (vm.ShowHitMissErrorLog) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.HitMissMonteCarloEstimateErrorLog);
             if (vm.ShowTraditional) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.TraditonalMonteCarloEstimate);
             if (vm.ShowTraditionalError) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.TraditonalMonteCarloEstimateError);
+            if (vm.ShowTraditionalErrorLog) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.TraditonalMonteCarloEstimateErrorLog);
             if (vm.ShowBestestIntegral) FunctionPlot.Plot.Add.HorizontalLine(HeldValues.bestestMostAccurateIntegralValue);
             FunctionPlot.Plot.Axes.AutoScale();
             FunctionPlot.Refresh();
@@ -452,17 +467,31 @@ namespace Numerical_Integration.Views
                 nArray[n - 1] = n;
             }
             HeldValues.RectangleEstimate = rectangleNint;
-            HeldValues.RectangleEstimateError = rectangleNintError;
+            HeldValues.RectangleEstimateError = (double[])rectangleNintError.Clone();
             HeldValues.TrapezoidEstimate = trapeziaNint;
-            HeldValues.TrapezoidEstimateError = trapeziaNintError;
+            HeldValues.TrapezoidEstimateError = (double[])trapeziaNintError.Clone();
             HeldValues.SimpsonEstimate = simpsonRuleNint;
-            HeldValues.SimpsonEstimateError = simpsonRuleNintError;
+            HeldValues.SimpsonEstimateError = (double[])simpsonRuleNintError.Clone();
             HeldValues.HitMissMonteCarloEstimate = hitMissMonteCarloNint;
-            HeldValues.HitMissMonteCarloEstimateError = hitMissMonteCarloNintError;
+            HeldValues.HitMissMonteCarloEstimateError = (double[])hitMissMonteCarloNintError.Clone();
             HeldValues.TraditonalMonteCarloEstimate = traditionalMonteCarloNint;
-            HeldValues.TraditonalMonteCarloEstimateError = traditionalMonteCarloNintError;
+            HeldValues.TraditonalMonteCarloEstimateError = (double[])traditionalMonteCarloNintError.Clone();
             HeldValues.GivenN = nArray;
             HeldValues.bestestMostAccurateIntegralValue = bestestIntegral;
+            // I don't want more arrays, so I am going to reuse those first errors arrays for the log and just have another loop
+            for (int n = 0; n < N; n++)
+            {
+                rectangleNintError[n] = Math.Log10(Math.Max(rectangleNintError[n], 1e-300));
+                trapeziaNintError[n] = Math.Log10(Math.Max(trapeziaNintError[n], 1e-300));
+                simpsonRuleNintError[n] = Math.Log10(Math.Max(simpsonRuleNintError[n], 1e-300));
+                hitMissMonteCarloNintError[n] = Math.Log10(Math.Max(hitMissMonteCarloNintError[n], 1e-300));
+                traditionalMonteCarloNintError[n] = Math.Log10(Math.Max(traditionalMonteCarloNintError[n], 1e-300));
+            }
+            HeldValues.RectangleEstimateErrorLog = rectangleNintError;
+            HeldValues.TrapezoidEstimateErrorLog = trapeziaNintError;
+            HeldValues.SimpsonEstimateErrorLog = simpsonRuleNintError;
+            HeldValues.HitMissMonteCarloEstimateErrorLog = hitMissMonteCarloNintError;
+            HeldValues.TraditonalMonteCarloEstimateErrorLog = traditionalMonteCarloNintError;
         }
     }
 }

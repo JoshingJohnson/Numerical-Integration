@@ -31,42 +31,80 @@
 
 		<!-- Controls Panel -->
 		<StackPanel Grid.Column="1" Background="Black" VerticalAlignment="Stretch" Margin="10,10,0,0">
-			<TextBlock Text="Function:"/>
-			<TextBox BorderBrush="#3F0071" Name="InputName" Text="{Binding InputFunction}"/>
 
-			<TextBlock Text="X Start:" Margin="0,5,0,0"/>
-			<TextBox BorderBrush="#3F0071" Text="{Binding InputXStart}"/>
+			<!-- Other grid that I don't even use, I should get rid of this-->
+			<Grid>
+				<Grid.RowDefinitions>
+					<RowDefinition Height="2*"/>
+					<!-- Functions panel -->
+					<RowDefinition Height="*"/>
+					<!-- Other panel -->
+				</Grid.RowDefinitions>
+			</Grid>
 
-			<TextBlock Text="X End:" Margin="0,5,0,0"/>
-			<TextBox BorderBrush="#3F0071" Text="{Binding InputXEnd}"/>
+			<!-- Functions panel -->
+			<StackPanel Grid.Row="0">
+				<TextBlock Text="Number of Dimensions:" Foreground="White" Margin="0,0,0,5"/>
+				<NumericUpDown Name="DimensionSelector" Minimum="2" Maximum="100" Increment="1" Value="{Binding DimensionCount, Mode=TwoWay}" BorderBrush="#3F0071" Background="Black" Foreground="White" Margin="0,0,0,10" FormatString="0" ParsingNumberStyle="Integer"/>
+				<ScrollViewer Height="300" VerticalScrollBarVisibility="Auto">
+					<ItemsControl ItemsSource="{Binding FunctionDimensions}">
+						<ItemsControl.ItemTemplate>
+							<DataTemplate x:DataType="vm:FunctionDimensionViewModel">
+								<Expander Header="Function Mapping" IsExpanded="False" Margin="0,0,0,10">
+									<StackPanel Margin="10">
+										<TextBlock Text="Function:" Foreground="White"/>
+										<TextBox Text="{Binding Function, Mode=TwoWay}" BorderBrush="#3F0071"/>
 
-			<TextBlock Text="N Value:" Margin="0,5,0,0"/>
-			<TextBox BorderBrush="#3F0071" Text="{Binding InputN}"/>
+										<TextBlock Text="X Start:" Margin="0,5,0,0" Foreground="White"/>
+										<TextBox Text="{Binding XStart, Mode=TwoWay}" BorderBrush="#3F0071"/>
 
-			<Button BorderBrush="#3F0071" Content="Plot" Command="{Binding FunctionButton}" Margin="0,10,0,0"/>
+										<TextBlock Text="X End:" Margin="0,5,0,0" Foreground="White"/>
+										<TextBox Text="{Binding XEnd, Mode=TwoWay}" BorderBrush="#3F0071"/>
+									</StackPanel>
+								</Expander>
+							</DataTemplate>
+						</ItemsControl.ItemTemplate>
+					</ItemsControl>
+				</ScrollViewer>
 
-			<StackPanel Orientation="Vertical" Spacing="4" Margin="0,10,0,0">
-				<Button BorderBrush="#3F0071" Name="ShowButton" Content="Show..." Width="200" Command="{Binding TogglePopupCommand}" />
-				<Popup IsOpen="{Binding IsPopupOpen}" PlacementTarget="{Binding ElementName=ShowButton}" PlacementMode="Bottom" IsLightDismissEnabled="True">
-					<Border Background="Black" BorderBrush="#3F0071" BorderThickness="2" CornerRadius="6" Padding="6">
-						<StackPanel>
-							<CheckBox Content="X Axis" IsChecked="{Binding ShowXaxis}"/>
-							<CheckBox Content="Y Axis" IsChecked="{Binding ShowYaxis}"/>
-							<CheckBox Content="Function" IsChecked="{Binding ShowFunction}"/>
-							<CheckBox Content="Rectangle" IsChecked="{Binding ShowRectangle}"/>
-							<CheckBox Content="Rectangle Error" IsChecked="{Binding ShowRectangleError}"/>
-							<CheckBox Content="Trapezoid" IsChecked="{Binding ShowTrapezoid}"/>
-							<CheckBox Content="Trapezoid Error" IsChecked="{Binding ShowTrapezoidError}"/>
-							<CheckBox Content="Simpson" IsChecked="{Binding ShowSimpson}"/>
-							<CheckBox Content="Simpson Error" IsChecked="{Binding ShowSimpsonError}"/>
-							<CheckBox Content="Hit-Miss Monte Carlo" IsChecked="{Binding ShowHitMiss}"/>
-							<CheckBox Content="Hit-Miss Monte Carlo Error" IsChecked="{Binding ShowHitMissError}"/>
-							<CheckBox Content="Traditional Monte Carlo" IsChecked="{Binding ShowTraditional}"/>
-							<CheckBox Content="Traditional Monte Carlo Error" IsChecked="{Binding ShowTraditionalError}"/>
-							<CheckBox Content="Bestest Integral" IsChecked="{Binding ShowBestestIntegral}"/>
-						</StackPanel>
-					</Border>
-				</Popup>
+				
+			</StackPanel>
+
+
+			<!-- Other panel -->
+			<StackPanel Grid.Row="0">
+				<TextBlock Text="N Value:" Foreground="White"/>
+				<TextBox Text="{Binding InputN, Mode=TwoWay}" BorderBrush="#3F0071"/>
+				<Button BorderBrush="#3F0071" Content="Plot" Command="{Binding FunctionButton}" Margin="0,10,0,0"/>
+				<StackPanel Orientation="Vertical" Spacing="4" Margin="0,10,0,0">
+					<Button BorderBrush="#3F0071" Name="ShowButton" Content="Show..." Width="200" Command="{Binding TogglePopupCommand}" />
+					<Popup IsOpen="{Binding IsPopupOpen}" PlacementTarget="{Binding ElementName=ShowButton}" PlacementMode="Bottom" IsLightDismissEnabled="True">
+						<Border Background="Black" BorderBrush="#3F0071" BorderThickness="2" CornerRadius="6" Padding="6">
+							<StackPanel>
+								<CheckBox Content="X Axis" IsChecked="{Binding ShowXaxis}"/>
+								<CheckBox Content="Y Axis" IsChecked="{Binding ShowYaxis}"/>
+								<CheckBox Content="Function" IsChecked="{Binding ShowFunction}"/>
+								<CheckBox Content="Rectangle" IsChecked="{Binding ShowRectangle}"/>
+								<CheckBox Content="Rectangle Error" IsChecked="{Binding ShowRectangleError}"/>
+								<CheckBox Content="Rectangle Log Error" IsChecked="{Binding ShowRectangleErrorLog}"/>
+								<CheckBox Content="Trapezoid" IsChecked="{Binding ShowTrapezoid}"/>
+								<CheckBox Content="Trapezoid Error" IsChecked="{Binding ShowTrapezoidError}"/>
+								<CheckBox Content="Trapezoid Log Error" IsChecked="{Binding ShowTrapezoidErrorLog}"/>
+								<CheckBox Content="Simpson" IsChecked="{Binding ShowSimpson}"/>
+								<CheckBox Content="Simpson Error" IsChecked="{Binding ShowSimpsonError}"/>
+								<CheckBox Content="Simpson Log Error" IsChecked="{Binding ShowSimpsonErrorLog}"/>
+								<CheckBox Content="Hit-Miss Monte Carlo" IsChecked="{Binding ShowHitMiss}"/>
+								<CheckBox Content="Hit-Miss Monte Carlo Error" IsChecked="{Binding ShowHitMissError}"/>
+								<CheckBox Content="Hit-Miss Monte Carlo Log Error" IsChecked="{Binding ShowHitMissErrorLog}"/>
+								<CheckBox Content="Traditional Monte Carlo" IsChecked="{Binding ShowTraditional}"/>
+								<CheckBox Content="Traditional Monte Carlo Error" IsChecked="{Binding ShowTraditionalError}"/>
+								<CheckBox Content="Traditional Monte Carlo Error Log" IsChecked="{Binding ShowTraditionalErrorLog}"/>
+								<CheckBox Content="Bestest Integral" IsChecked="{Binding ShowBestestIntegral}"/>
+							</StackPanel>
+						</Border>
+					</Popup>
+				</StackPanel>
+				
 			</StackPanel>
 		</StackPanel>
 	</Grid>

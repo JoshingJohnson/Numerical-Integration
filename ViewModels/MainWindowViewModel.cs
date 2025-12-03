@@ -4,9 +4,11 @@ using ReactiveUI;
 using ScottPlot.Avalonia;
 using ScottPlot.Plottables;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 
@@ -14,29 +16,24 @@ namespace Numerical_Integration.ViewModels
 {
     public class MainWindowViewModel : ReactiveObject
     {
-        // Text inputs
-        private string _inputFunction = "";
-        public string InputFunction
+        public ObservableCollection<FunctionDimensionViewModel> FunctionDimensions { get; } = new();
+
+        private int _dimensionCount = 2;
+        public int DimensionCount
         {
-            get => _inputFunction;
-            set => this.RaiseAndSetIfChanged(ref _inputFunction, value);
+            get => _dimensionCount;
+            set
+            {
+                int whole = Math.Max(2, (int)Math.Floor((double)value)); // Ensure a whole number >= 2
+                if (_dimensionCount != whole)
+                {
+                    this.RaiseAndSetIfChanged(ref _dimensionCount, whole);
+                    UpdateFunctionDimensions(); // Update the expanders
+                }
+            }
         }
 
-        private string _inputXStart = "";
-        public string InputXStart
-        {
-            get => _inputXStart;
-            set => this.RaiseAndSetIfChanged(ref _inputXStart, value);
-        }
-
-        private string _inputXEnd = "";
-        public string InputXEnd
-        {
-            get => _inputXEnd;
-            set => this.RaiseAndSetIfChanged(ref _inputXEnd, value);
-        }
-
-        private string _inputN = "";
+        private string _inputN = "10";
         public string InputN
         {
             get => _inputN;
@@ -84,6 +81,13 @@ namespace Numerical_Integration.ViewModels
             set => this.RaiseAndSetIfChanged(ref _showRectangleError, value);
         }
 
+        private bool _showRectangleErrorLog;
+        public bool ShowRectangleErrorLog
+        {
+            get => _showRectangleErrorLog;
+            set => this.RaiseAndSetIfChanged(ref _showRectangleErrorLog, value);
+        }
+
         private bool _showTrapezoid;
         public bool ShowTrapezoid
         {
@@ -95,6 +99,13 @@ namespace Numerical_Integration.ViewModels
         {
             get => _showTrapezoidError;
             set => this.RaiseAndSetIfChanged(ref _showTrapezoidError, value);
+        }
+
+        private bool _showTrapezoidErrorLog;
+        public bool ShowTrapezoidErrorLog
+        {
+            get => _showTrapezoidErrorLog;
+            set => this.RaiseAndSetIfChanged(ref _showTrapezoidErrorLog, value);
         }
 
         private bool _showSimpson;
@@ -110,6 +121,13 @@ namespace Numerical_Integration.ViewModels
             set => this.RaiseAndSetIfChanged(ref _showSimpsonError, value);
         }
 
+        private bool _showSimpsonErrorLog;
+        public bool ShowSimpsonErrorLog
+        {
+            get => _showSimpsonErrorLog;
+            set => this.RaiseAndSetIfChanged(ref _showSimpsonErrorLog, value);
+        }
+
         private bool _showHitMiss;
         public bool ShowHitMiss
         {
@@ -121,6 +139,13 @@ namespace Numerical_Integration.ViewModels
         {
             get => _showHitMissError;
             set => this.RaiseAndSetIfChanged(ref _showHitMissError, value);
+        }
+
+        private bool _showHitMissErrorLog;
+        public bool ShowHitMissErrorLog
+        {
+            get => _showHitMissErrorLog;
+            set => this.RaiseAndSetIfChanged(ref _showHitMissErrorLog, value);
         }
 
         private bool _showTraditional;
@@ -136,14 +161,20 @@ namespace Numerical_Integration.ViewModels
             set => this.RaiseAndSetIfChanged(ref _showTraditionalError, value);
         }
 
+        private bool _showTraditionalErrorLog;
+        public bool ShowTraditionalErrorLog
+        {
+            get => _showTraditionalErrorLog;
+            set => this.RaiseAndSetIfChanged(ref _showTraditionalErrorLog, value);
+        }
+
         private bool _showBestestIntegral;
         public bool ShowBestestIntegral
         {
             get => _showBestestIntegral;
             set => this.RaiseAndSetIfChanged(ref _showBestestIntegral, value);
         }
-        // Button
-        public ReactiveCommand<Unit, FunctionInput> FunctionButton { get; }
+        public ReactiveCommand<Unit, FunctionInput[]> FunctionButton { get; }
         public ReactiveCommand<Unit, Unit> TogglePopupCommand { get; }
 
         public MainWindowViewModel()
@@ -152,24 +183,21 @@ namespace Numerical_Integration.ViewModels
             {
                 IsPopupOpen = !IsPopupOpen;
             });
-
+            UpdateFunctionDimensions();
             FunctionButton = ReactiveCommand.Create(() =>
             {
-                int.TryParse(InputXStart, out int xStart);
-                int.TryParse(InputXEnd, out int xEnd);
-                int.TryParse(InputN, out int N);
-
-                var input = new FunctionInput
-                {
-                    Function = InputFunction,
-                    XStart = xStart,
-                    XEnd = xEnd,
-                    N = N
-                };
-
-                Debug.WriteLine($"VM emitted: {InputFunction}, {xStart}, {xEnd}, {N}");
-                return input;
+                FunctionInput[] allInputs = FunctionDimensions.Select(fd => fd.ToFunctionInput()).ToArray();
+                return allInputs;
             });
+        }
+
+        private void UpdateFunctionDimensions()
+        {
+            while (FunctionDimensions.Count < DimensionCount - 1)
+                FunctionDimensions.Add(new FunctionDimensionViewModel());
+
+            while (FunctionDimensions.Count > DimensionCount - 1)
+                FunctionDimensions.RemoveAt(FunctionDimensions.Count - 1);
         }
     }
 }

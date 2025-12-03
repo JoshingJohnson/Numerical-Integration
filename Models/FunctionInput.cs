@@ -28,6 +28,11 @@ namespace Numerical_Integration.Models
         public double[] SimpsonEstimateError { get; set; }
         public double[] HitMissMonteCarloEstimateError { get; set; }
         public double[] TraditonalMonteCarloEstimateError { get; set; }
+        public double[] RectangleEstimateErrorLog { get; set; } // Holds the error with log applied
+        public double[] TrapezoidEstimateErrorLog { get; set; }
+        public double[] SimpsonEstimateErrorLog { get; set; }
+        public double[] HitMissMonteCarloEstimateErrorLog { get; set; }
+        public double[] TraditonalMonteCarloEstimateErrorLog { get; set; }
         public double[] GivenN { get; set; } // Holds the values of N
         public double bestestMostAccurateIntegralValue { get; set; }
     }
