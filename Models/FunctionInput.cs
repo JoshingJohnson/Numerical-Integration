@@ -34,6 +34,7 @@ namespace Numerical_Integration.Models
         public double[] HitMissMonteCarloEstimateErrorLog { get; set; }
         public double[] TraditonalMonteCarloEstimateErrorLog { get; set; }
         public double[] GivenN { get; set; } // Holds the values of N
+        public double[] StepsForGivenN { get; set; }
         public double bestestMostAccurateIntegralValue { get; set; }
     }
 }

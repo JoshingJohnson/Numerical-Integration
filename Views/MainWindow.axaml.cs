@@ -85,19 +85,19 @@ namespace Numerical_Integration.Views
             if (vm.ShowFunction && HeldValues.FunctionX != null) FunctionPlot.Plot.Add.Scatter(HeldValues.FunctionX, HeldValues.FunctionY);
             if (vm.ShowRectangle) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.RectangleEstimate);
             if (vm.ShowRectangleError) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.RectangleEstimateError);
-            if (vm.ShowRectangleErrorLog) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.RectangleEstimateErrorLog);
+            if (vm.ShowRectangleErrorLog) FunctionPlot.Plot.Add.Scatter(HeldValues.StepsForGivenN, HeldValues.RectangleEstimateErrorLog);
             if (vm.ShowTrapezoid) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.TrapezoidEstimate);
             if (vm.ShowTrapezoidError) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.TrapezoidEstimateError);
-            if (vm.ShowTrapezoidErrorLog) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.TrapezoidEstimateErrorLog);
+            if (vm.ShowTrapezoidErrorLog) FunctionPlot.Plot.Add.Scatter(HeldValues.StepsForGivenN, HeldValues.TrapezoidEstimateErrorLog);
             if (vm.ShowSimpson) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.SimpsonEstimate);
             if (vm.ShowSimpsonError) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.SimpsonEstimateError);
-            if (vm.ShowSimpsonErrorLog) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.SimpsonEstimateErrorLog);
+            if (vm.ShowSimpsonErrorLog) FunctionPlot.Plot.Add.Scatter(HeldValues.StepsForGivenN, HeldValues.SimpsonEstimateErrorLog);
             if (vm.ShowHitMiss) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.HitMissMonteCarloEstimate);
             if (vm.ShowHitMissError) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.HitMissMonteCarloEstimateError);
-            if (vm.ShowHitMissErrorLog) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.HitMissMonteCarloEstimateErrorLog);
+            if (vm.ShowHitMissErrorLog) FunctionPlot.Plot.Add.Scatter(HeldValues.StepsForGivenN, HeldValues.HitMissMonteCarloEstimateErrorLog);
             if (vm.ShowTraditional) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.TraditonalMonteCarloEstimate);
             if (vm.ShowTraditionalError) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.TraditonalMonteCarloEstimateError);
-            if (vm.ShowTraditionalErrorLog) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.TraditonalMonteCarloEstimateErrorLog);
+            if (vm.ShowTraditionalErrorLog) FunctionPlot.Plot.Add.Scatter(HeldValues.StepsForGivenN, HeldValues.TraditonalMonteCarloEstimateErrorLog);
             if (vm.ShowBestestIntegral) FunctionPlot.Plot.Add.HorizontalLine(HeldValues.bestestMostAccurateIntegralValue);
             FunctionPlot.Plot.Axes.AutoScale();
             FunctionPlot.Refresh();
@@ -415,27 +415,27 @@ namespace Numerical_Integration.Views
 
         private void NumericalIntegration(double xStart, double xEnd, string functionString, int N)
         {
-            double step=0, midStep=0, currentStepSum=0, nextStepSum=0, midStepSum=0, XHolder=0, YHolder=0, hitMissMonteCarloHits=0, traditionalMonteCarloHits=0;
-            double xRange = xEnd-xStart;
-            double[] rectangleNint=new double[N], rectangleNintError=new double[N], trapeziaNint=new double[N], trapeziaNintError=new double[N], hitMissMonteCarloNint =new double[N], hitMissMonteCarloNintError=new double[N], traditionalMonteCarloNint = new double[N], traditionalMonteCarloNintError=new double[N], simpsonRuleNint=new double[N], simpsonRuleNintError=new double[N], nArray =new double[N];
+            double step = 0, midStep = 0, currentStepSum = 0, nextStepSum = 0, midStepSum = 0, XHolder = 0, YHolder = 0, hitMissMonteCarloHits = 0, traditionalMonteCarloHits = 0;
+            double xRange = xEnd - xStart;
+            double[] rectangleNint = new double[N], rectangleNintError = new double[N], trapeziaNint = new double[N], trapeziaNintError = new double[N], hitMissMonteCarloNint = new double[N], hitMissMonteCarloNintError = new double[N], traditionalMonteCarloNint = new double[N], traditionalMonteCarloNintError = new double[N], simpsonRuleNint = new double[N], simpsonRuleNintError = new double[N], nArray = new double[N], stepArray = new double[N];
             double min = double.PositiveInfinity;
             double max = double.NegativeInfinity;
             Random rng = new Random();
-            for (int i = 0; i < 1000; i++) // Might need to tweak this value of samples, could have user input, could not
+            for (int i = 0; i < 40000; i++) // Might need to tweak this value of samples, could have user input, could not
             {
-                XHolder = xStart+(xRange)*rng.NextDouble();
-                YHolder = (EvaluateFunction([XHolder], functionString)[0]);
+                XHolder = xStart + (xRange) * rng.NextDouble();
+                YHolder = (EvaluateFunction(new[] { XHolder }, functionString)[0]);
                 if (YHolder < min) min = YHolder;
                 if (YHolder > max) max = YHolder;
             }
-            if (min>0) min = 0;
-            if (max<0) max= 0;
-            double monteCarloBoxArea = (max-min)*(xRange);
-            for (int i = 0; i < 1000; i++) // Might need tweaking, could do user input
+            if (min > 0) min = 0;
+            if (max < 0) max = 0;
+            double monteCarloBoxArea = (max - min) * (xRange);
+            for (int i = 0; i < 40000; i++) // Might need tweaking, could do user input
             {
-                if ((max - min) * rng.NextDouble() < (EvaluateFunction([xRange * rng.NextDouble() + xStart], functionString)[0]-min)) hitMissMonteCarloHits++;
+                if ((max - min) * rng.NextDouble() < (EvaluateFunction(new[] { xRange * rng.NextDouble() + xStart }, functionString)[0] - min)) hitMissMonteCarloHits++;
             }
-            double bestestIntegral = (hitMissMonteCarloHits / 1000) * monteCarloBoxArea + min*xRange;
+            double bestestIntegral = (hitMissMonteCarloHits / 40000) * monteCarloBoxArea + min * xRange;
             for (int n = 1; n <= N; n++)
             {
                 currentStepSum = 0;
@@ -443,27 +443,58 @@ namespace Numerical_Integration.Views
                 hitMissMonteCarloHits = 0;
                 traditionalMonteCarloHits = 0;
                 step = xRange / n;
+                stepArray[n - 1] = Math.Log10(step);
                 midStep = step / 2;
-                for (double x = xStart; x < xEnd; x += step)
+
+                for (int k = 0; k < n; k++)
                 {
-                    YHolder = EvaluateFunction([x], functionString)[0]; // None of this copes with negatives very well
-                    XHolder = (max-min) * rng.NextDouble();
-                    if (XHolder < (YHolder-min)) hitMissMonteCarloHits++;
-                    if (XHolder < (EvaluateFunction([xRange*rng.NextDouble()+xStart], functionString)[0]-min)) traditionalMonteCarloHits++;
-                    currentStepSum = currentStepSum + YHolder;
-                    midStepSum = midStepSum + EvaluateFunction([x+midStep], functionString)[0];
+                    double x = xStart + k * step;
+                    YHolder = EvaluateFunction(new[] { x }, functionString)[0];
+                    currentStepSum += YHolder;
+                    midStepSum += EvaluateFunction(new[] { x + midStep }, functionString)[0];
+                    XHolder = (max - min) * rng.NextDouble();
+                    if (XHolder < (YHolder - min)) hitMissMonteCarloHits++;
+                    if (XHolder < (EvaluateFunction(new[] { xRange * rng.NextDouble() + xStart }, functionString)[0] - min)) traditionalMonteCarloHits++;
                 }
-                nextStepSum= currentStepSum - EvaluateFunction([xStart], functionString)[0] + EvaluateFunction([xEnd], functionString)[0]; // We don't need to calculate what we have already calculated. We can just minus and add the leftovers.
-                rectangleNint[n-1] = currentStepSum*step;
-                rectangleNintError[n-1] = Math.Abs(rectangleNint[n-1]-bestestIntegral);
-                trapeziaNint[n-1] = ((currentStepSum+nextStepSum)/2)*step;
+
+                nextStepSum = currentStepSum - EvaluateFunction(new[] { xStart }, functionString)[0] + EvaluateFunction(new[] { xEnd }, functionString)[0];
+
+                rectangleNint[n - 1] = currentStepSum * step;
+                rectangleNintError[n - 1] = Math.Abs(rectangleNint[n - 1] - bestestIntegral);
+
+                // Trapezoid using average of left and right endpoint sums
+                trapeziaNint[n - 1] = ((currentStepSum + nextStepSum) / 2.0) * step;
                 trapeziaNintError[n - 1] = Math.Abs(trapeziaNint[n - 1] - bestestIntegral);
-                simpsonRuleNint[n - 1] = (step / 6) * (currentStepSum+4*midStepSum+nextStepSum); // (b-a)/6 is just step/6. f(a)+4f(m)+f(b) when added for each n is just the sums
+
+                // Simpson
+                if (n % 2 == 0)
+                {
+                    double simpsonSum = 0.0;
+                    for (int k = 0; k <= n; k++)
+                    {
+                        double x = xStart + k * step;
+                        double y = EvaluateFunction(new[] { x }, functionString)[0];
+
+                        if (k == 0 || k == n)
+                            simpsonSum += y;
+                        else if (k % 2 == 1)
+                            simpsonSum += 4.0 * y;
+                        else
+                            simpsonSum += 2.0 * y;
+                    }
+                    simpsonRuleNint[n - 1] = simpsonSum * (step / 3.0);
+                }
+                else
+                {
+                    // Does trapezoid for odd n
+                    simpsonRuleNint[n - 1] = trapeziaNint[n - 1];
+                }
                 simpsonRuleNintError[n - 1] = Math.Abs(simpsonRuleNint[n - 1] - bestestIntegral);
-                hitMissMonteCarloNint[n - 1] = (hitMissMonteCarloHits / n) * monteCarloBoxArea + min * xRange;
+
+                hitMissMonteCarloNint[n - 1] = (hitMissMonteCarloHits / (double)n) * monteCarloBoxArea + min * xRange;
                 hitMissMonteCarloNintError[n - 1] = Math.Abs(hitMissMonteCarloNint[n - 1] - bestestIntegral);
-                traditionalMonteCarloNint[n - 1] = (traditionalMonteCarloHits / n) * monteCarloBoxArea + min * xRange;
-                traditionalMonteCarloNintError[n - 1] = Math.Abs(traditionalMonteCarloNint[n-1]-bestestIntegral);
+                traditionalMonteCarloNint[n - 1] = (traditionalMonteCarloHits / (double)n) * monteCarloBoxArea + min * xRange;
+                traditionalMonteCarloNintError[n - 1] = Math.Abs(traditionalMonteCarloNint[n - 1] - bestestIntegral);
                 nArray[n - 1] = n;
             }
             HeldValues.RectangleEstimate = rectangleNint;
@@ -477,6 +508,7 @@ namespace Numerical_Integration.Views
             HeldValues.TraditonalMonteCarloEstimate = traditionalMonteCarloNint;
             HeldValues.TraditonalMonteCarloEstimateError = (double[])traditionalMonteCarloNintError.Clone();
             HeldValues.GivenN = nArray;
+            HeldValues.StepsForGivenN = stepArray;
             HeldValues.bestestMostAccurateIntegralValue = bestestIntegral;
             // I don't want more arrays, so I am going to reuse those first errors arrays for the log and just have another loop
             for (int n = 0; n < N; n++)
