@@ -22,19 +22,29 @@ namespace Numerical_Integration.Models
         public double[] TrapezoidEstimate { get; set; }
         public double[] SimpsonEstimate { get; set; }
         public double[] HitMissMonteCarloEstimate { get; set; }
-        public double[] TraditonalMonteCarloEstimate { get; set; }
+        public double[] MeanMonteCarloEstimate { get; set; }
         public double[] RectangleEstimateError { get; set; } // Holds the error against N of different numerical integration techniques
         public double[] TrapezoidEstimateError { get; set; }
         public double[] SimpsonEstimateError { get; set; }
         public double[] HitMissMonteCarloEstimateError { get; set; }
-        public double[] TraditonalMonteCarloEstimateError { get; set; }
+        public double[] MeanMonteCarloEstimateError { get; set; }
         public double[] RectangleEstimateErrorLog { get; set; } // Holds the error with log applied
         public double[] TrapezoidEstimateErrorLog { get; set; }
         public double[] SimpsonEstimateErrorLog { get; set; }
         public double[] HitMissMonteCarloEstimateErrorLog { get; set; }
-        public double[] TraditonalMonteCarloEstimateErrorLog { get; set; }
+        public double[] MeanMonteCarloEstimateErrorLog { get; set; }
         public double[] GivenN { get; set; } // Holds the values of N
         public double[] StepsForGivenN { get; set; }
         public double bestestMostAccurateIntegralValue { get; set; }
+        // Used for explanation. Points are gotten from the final n
+        public double[] hitMonteCarloX { get; set; }
+        public double[] hitMonteCarloY { get; set; }
+        public double[] missMonteCarloX { get; set; }
+        public double[] missMonteCarloY { get; set; }
+        public double[] midpointExplanation { get; set; }
+        public double[] simpsonExplanation { get; set; }
+        public double[] explanationX { get; set; }
+        public double finalStepN { get; set; }
+
     }
 }

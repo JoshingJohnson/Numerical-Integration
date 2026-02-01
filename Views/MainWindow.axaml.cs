@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.Interactivity;
 using Avalonia.Metadata;
 using Avalonia.Rendering.Composition;
@@ -11,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Text.RegularExpressions;
@@ -72,7 +74,11 @@ namespace Numerical_Integration.Views
                     vm.WhenAnyValue(x => x.ShowTraditional).Select(_ => Unit.Default),
                     vm.WhenAnyValue(x => x.ShowTraditionalError).Select(_ => Unit.Default),
                     vm.WhenAnyValue(x => x.ShowTraditionalErrorLog).Select(_ => Unit.Default),
-                    vm.WhenAnyValue(x => x.ShowBestestIntegral).Select(_ => Unit.Default)
+                    vm.WhenAnyValue(x => x.ShowBestestIntegral).Select(_ => Unit.Default),
+                    vm.WhenAnyValue(x => x.ShowRectangleExplanation).Select(_ => Unit.Default),
+                    vm.WhenAnyValue(x => x.ShowTrapeziaExplanation).Select(_ => Unit.Default),
+                    vm.WhenAnyValue(x => x.ShowMonteCarloExplanation).Select(_ => Unit.Default),
+                    vm.WhenAnyValue(x => x.ShowSimpsonExplanation).Select(_ => Unit.Default)
                 ).Subscribe(_ => UpdatePlot(vm));
             }
         }
@@ -80,9 +86,93 @@ namespace Numerical_Integration.Views
         private void UpdatePlot(MainWindowViewModel vm)
         {
             FunctionPlot.Plot.Clear();
+            FunctionPlot.Plot.FigureBackground.Color = ScottPlot.Color.FromHex("#e3e3e3");
+            FunctionPlot.Plot.DataBackground.Color = ScottPlot.Color.FromHex("#ffffff");
+            double step = HeldValues.finalStepN;
+            if (vm.ShowMonteCarloExplanation) 
+            {
+                for (int position = 0; position < HeldValues.GivenN.Count(); position++)
+                {
+                    var hits = FunctionPlot.Plot.Add.Scatter(HeldValues.hitMonteCarloX, HeldValues.hitMonteCarloY);
+                    hits.LineWidth = 0;
+                    hits.Color = ScottPlot.Color.FromHex("#E67E22");
+                    var misses = FunctionPlot.Plot.Add.Scatter(HeldValues.missMonteCarloX, HeldValues.missMonteCarloY);
+                    misses.LineWidth = 0;
+                    misses.Color = ScottPlot.Color.FromHex("#a1bec7");
+                }
+            }
+            if (vm.ShowRectangleExplanation)
+            {
+                List<Coordinates> rectangleCorners = new();
+                for (int position = 0; position < HeldValues.GivenN.Count(); position++)
+                {
+                    rectangleCorners.Clear();
+                    rectangleCorners.AddRange(new[]
+                    {
+                        new Coordinates(position*step, 0),
+                        new Coordinates(position*step,HeldValues.midpointExplanation[position]),
+                        new Coordinates((position+1)*step,HeldValues.midpointExplanation[position]),
+                        new Coordinates((position+1)*step, 0),
+                    });
+                    var rectangle = FunctionPlot.Plot.Add.Polygon(rectangleCorners.ToArray());
+                    rectangle.LineColor = ScottPlot.Color.FromHex("#404040");
+                    if (position % 2 == 0)
+                    {
+                        rectangle.FillColor = ScottPlot.Color.FromHex("#E67E22");
+                    }
+                    else rectangle.FillColor = ScottPlot.Color.FromHex("#a1bec7");
+                }
+            }
+            if (vm.ShowTrapeziaExplanation)
+            {
+                List<Coordinates> trapeziaCorners = new();
+                for (int position = 0; position < HeldValues.GivenN.Count(); position++)
+                {
+                    trapeziaCorners.Clear();
+                    trapeziaCorners.AddRange(new[]
+                    {
+                        new Coordinates(position*step, 0),
+                        new Coordinates(position*step,HeldValues.simpsonExplanation[position]),
+                        new Coordinates((position+1)*step,HeldValues.simpsonExplanation[position+1]),
+                        new Coordinates((position+1)*step, 0)
+                    });
+                    var trapezia = FunctionPlot.Plot.Add.Polygon(trapeziaCorners.ToArray());
+                    trapezia.LineColor = ScottPlot.Color.FromHex("#404040");
+                    if (position % 2 == 0)
+                    {
+                        trapezia.FillColor = ScottPlot.Color.FromHex("#E67E22");
+                    }
+                    else trapezia.FillColor = ScottPlot.Color.FromHex("#a1bec7");
+                }
+            }
+            if (vm.ShowFunction && HeldValues.FunctionX != null)
+            {
+                var function = FunctionPlot.Plot.Add.Scatter(HeldValues.FunctionX, HeldValues.FunctionY);
+                function.Color = ScottPlot.Color.FromHex("#000000");
+            }
+            if (vm.ShowSimpsonExplanation)
+            {
+                List<Coordinates> simpsonPoints = new();
+
+                for (int position = 0; position <= HeldValues.GivenN.Count() - 1; position += 2) // stop safely
+                {
+                    simpsonPoints.Clear();
+
+                    simpsonPoints.AddRange(new[]
+                    {
+                        new Coordinates(position*step, HeldValues.simpsonExplanation[position]),
+                        new Coordinates((position+1)*step, HeldValues.simpsonExplanation[position + 1]),
+                        new Coordinates((position+2)*step, HeldValues.simpsonExplanation[position + 2])
+                    });
+                    var parabola = FunctionPlot.Plot.Add.Scatter(simpsonPoints.ToArray());
+                    parabola.Smooth = true;
+                    parabola.LineColor = (position % 4 == 0)
+                        ? ScottPlot.Color.FromHex("#E67E22")
+                        : ScottPlot.Color.FromHex("#a1bec7");
+                }
+            }
             if (vm.ShowXaxis) FunctionPlot.Plot.Add.HorizontalLine(0, color: Colors.Gray, width: 1);
             if (vm.ShowYaxis) FunctionPlot.Plot.Add.VerticalLine(0, color: Colors.Gray, width: 1);
-            if (vm.ShowFunction && HeldValues.FunctionX != null) FunctionPlot.Plot.Add.Scatter(HeldValues.FunctionX, HeldValues.FunctionY);
             if (vm.ShowRectangle) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.RectangleEstimate);
             if (vm.ShowRectangleError) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.RectangleEstimateError);
             if (vm.ShowRectangleErrorLog) FunctionPlot.Plot.Add.Scatter(HeldValues.StepsForGivenN, HeldValues.RectangleEstimateErrorLog);
@@ -95,9 +185,9 @@ namespace Numerical_Integration.Views
             if (vm.ShowHitMiss) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.HitMissMonteCarloEstimate);
             if (vm.ShowHitMissError) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.HitMissMonteCarloEstimateError);
             if (vm.ShowHitMissErrorLog) FunctionPlot.Plot.Add.Scatter(HeldValues.StepsForGivenN, HeldValues.HitMissMonteCarloEstimateErrorLog);
-            if (vm.ShowTraditional) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.TraditonalMonteCarloEstimate);
-            if (vm.ShowTraditionalError) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.TraditonalMonteCarloEstimateError);
-            if (vm.ShowTraditionalErrorLog) FunctionPlot.Plot.Add.Scatter(HeldValues.StepsForGivenN, HeldValues.TraditonalMonteCarloEstimateErrorLog);
+            if (vm.ShowTraditional) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.MeanMonteCarloEstimate);
+            if (vm.ShowTraditionalError) FunctionPlot.Plot.Add.Scatter(HeldValues.GivenN, HeldValues.MeanMonteCarloEstimateError);
+            if (vm.ShowTraditionalErrorLog) FunctionPlot.Plot.Add.Scatter(HeldValues.StepsForGivenN, HeldValues.MeanMonteCarloEstimateErrorLog);
             if (vm.ShowBestestIntegral) FunctionPlot.Plot.Add.HorizontalLine(HeldValues.bestestMostAccurateIntegralValue);
             FunctionPlot.Plot.Axes.AutoScale();
             FunctionPlot.Refresh();
@@ -415,51 +505,75 @@ namespace Numerical_Integration.Views
 
         private void NumericalIntegration(double xStart, double xEnd, string functionString, int N)
         {
-            double step = 0, midStep = 0, currentStepSum = 0, nextStepSum = 0, midStepSum = 0, XHolder = 0, YHolder = 0, hitMissMonteCarloHits = 0, traditionalMonteCarloHits = 0;
+            double step = 0, midStep = 0, currentStepSum = 0, nextStepSum = 0, midStepSum = 0, XHolder = 0, YHolder = 0, hitMissMonteCarloHits = 0, meanMonteCarloSum = 0, MidXEvaluation = 0;
             double xRange = xEnd - xStart;
-            double[] rectangleNint = new double[N], rectangleNintError = new double[N], trapeziaNint = new double[N], trapeziaNintError = new double[N], hitMissMonteCarloNint = new double[N], hitMissMonteCarloNintError = new double[N], traditionalMonteCarloNint = new double[N], traditionalMonteCarloNintError = new double[N], simpsonRuleNint = new double[N], simpsonRuleNintError = new double[N], nArray = new double[N], stepArray = new double[N];
+            double[] midpointExplanationHolder = new double[N], simpsonExplanationHolder = new double[N+1], explanationX = new double[N];
+            double[] rectangleNint = new double[N], rectangleNintError = new double[N], trapeziaNint = new double[N], trapeziaNintError = new double[N], hitMissMonteCarloNint = new double[N], hitMissMonteCarloNintError = new double[N], meanMonteCarloNint = new double[N], meanMonteCarloNintError = new double[N], simpsonRuleNint = new double[N], simpsonRuleNintError = new double[N], nArray = new double[N], stepArray = new double[N], hitX = new double[N], hitY = new double[N], missX = new double[N], missY = new double[N];
+            
+            double MonteCarloAverage = 0; // Bad code make poster better, oogah boogah
+
             double min = double.PositiveInfinity;
             double max = double.NegativeInfinity;
             Random rng = new Random();
-            for (int i = 0; i < 40000; i++) // Might need to tweak this value of samples, could have user input, could not
+            for (int i = 0; i < 1000000; i++) // Might need to tweak this value of samples, could have user input, could not
             {
                 XHolder = xStart + (xRange) * rng.NextDouble();
                 YHolder = (EvaluateFunction(new[] { XHolder }, functionString)[0]);
+                MonteCarloAverage = MonteCarloAverage + YHolder;
                 if (YHolder < min) min = YHolder;
                 if (YHolder > max) max = YHolder;
             }
             if (min > 0) min = 0;
             if (max < 0) max = 0;
             double monteCarloBoxArea = (max - min) * (xRange);
-            for (int i = 0; i < 40000; i++) // Might need tweaking, could do user input
+            for (int i = 0; i < 1000000; i++) // Might need tweaking, could do user input
             {
                 if ((max - min) * rng.NextDouble() < (EvaluateFunction(new[] { xRange * rng.NextDouble() + xStart }, functionString)[0] - min)) hitMissMonteCarloHits++;
             }
-            double bestestIntegral = (hitMissMonteCarloHits / 40000) * monteCarloBoxArea + min * xRange;
+            // double bestestIntegral = (hitMissMonteCarloHits / 1000000) * monteCarloBoxArea; Bad monte carlo method rar
+            double bestestIntegral = (MonteCarloAverage / 1000000) * xRange;
             for (int n = 1; n <= N; n++)
             {
                 currentStepSum = 0;
                 midStepSum = 0;
                 hitMissMonteCarloHits = 0;
-                traditionalMonteCarloHits = 0;
+                meanMonteCarloSum = 0;
                 step = xRange / n;
                 stepArray[n - 1] = Math.Log10(step);
                 midStep = step / 2;
-
                 for (int k = 0; k < n; k++)
                 {
                     double x = xStart + k * step;
                     YHolder = EvaluateFunction(new[] { x }, functionString)[0];
                     currentStepSum += YHolder;
-                    midStepSum += EvaluateFunction(new[] { x + midStep }, functionString)[0];
+                    MidXEvaluation = EvaluateFunction(new[] { x + midStep }, functionString)[0];
+                    midStepSum += MidXEvaluation;
+                    if (n == N)
+                    {
+                        midpointExplanationHolder[k] = MidXEvaluation; // This shit is actually horrible code please remove this shit holy fuck
+                        simpsonExplanationHolder[k] = YHolder;
+                        explanationX[k] = x;
+                    }
                     XHolder = (max - min) * rng.NextDouble();
-                    if (XHolder < (YHolder - min)) hitMissMonteCarloHits++;
-                    if (XHolder < (EvaluateFunction(new[] { xRange * rng.NextDouble() + xStart }, functionString)[0] - min)) traditionalMonteCarloHits++;
+                    if (XHolder < (YHolder - min))
+                    {
+                        if (n == N)
+                        {
+                            hitX[k] = x;
+                            hitY[k] = XHolder;
+                        }
+                        hitMissMonteCarloHits++;
+                    }
+                    else if (n == N)
+                    {
+                        missX[k] = x;
+                        missY[k] = XHolder;
+                    }
+                    meanMonteCarloSum += (EvaluateFunction(new[] { xRange * rng.NextDouble() + xStart }, functionString)[0]);
                 }
 
                 nextStepSum = currentStepSum - EvaluateFunction(new[] { xStart }, functionString)[0] + EvaluateFunction(new[] { xEnd }, functionString)[0];
-
-                rectangleNint[n - 1] = currentStepSum * step;
+                rectangleNint[n - 1] = midStepSum * step;
                 rectangleNintError[n - 1] = Math.Abs(rectangleNint[n - 1] - bestestIntegral);
 
                 // Trapezoid using average of left and right endpoint sums
@@ -493,10 +607,14 @@ namespace Numerical_Integration.Views
 
                 hitMissMonteCarloNint[n - 1] = (hitMissMonteCarloHits / (double)n) * monteCarloBoxArea + min * xRange;
                 hitMissMonteCarloNintError[n - 1] = Math.Abs(hitMissMonteCarloNint[n - 1] - bestestIntegral);
-                traditionalMonteCarloNint[n - 1] = (traditionalMonteCarloHits / (double)n) * monteCarloBoxArea + min * xRange;
-                traditionalMonteCarloNintError[n - 1] = Math.Abs(traditionalMonteCarloNint[n - 1] - bestestIntegral);
+                meanMonteCarloNint[n - 1] = (meanMonteCarloSum / (double)n) * (xRange);
+                meanMonteCarloNintError[n - 1] = Math.Abs(meanMonteCarloNint[n - 1] - bestestIntegral);
                 nArray[n - 1] = n;
             }
+            HeldValues.hitMonteCarloX = hitX;
+            HeldValues.hitMonteCarloY = hitY;
+            HeldValues.missMonteCarloX = missX;
+            HeldValues.missMonteCarloY = missY;
             HeldValues.RectangleEstimate = rectangleNint;
             HeldValues.RectangleEstimateError = (double[])rectangleNintError.Clone();
             HeldValues.TrapezoidEstimate = trapeziaNint;
@@ -505,8 +623,8 @@ namespace Numerical_Integration.Views
             HeldValues.SimpsonEstimateError = (double[])simpsonRuleNintError.Clone();
             HeldValues.HitMissMonteCarloEstimate = hitMissMonteCarloNint;
             HeldValues.HitMissMonteCarloEstimateError = (double[])hitMissMonteCarloNintError.Clone();
-            HeldValues.TraditonalMonteCarloEstimate = traditionalMonteCarloNint;
-            HeldValues.TraditonalMonteCarloEstimateError = (double[])traditionalMonteCarloNintError.Clone();
+            HeldValues.MeanMonteCarloEstimate = meanMonteCarloNint;
+            HeldValues.MeanMonteCarloEstimateError = (double[])meanMonteCarloNintError.Clone();
             HeldValues.GivenN = nArray;
             HeldValues.StepsForGivenN = stepArray;
             HeldValues.bestestMostAccurateIntegralValue = bestestIntegral;
@@ -517,13 +635,20 @@ namespace Numerical_Integration.Views
                 trapeziaNintError[n] = Math.Log10(Math.Max(trapeziaNintError[n], 1e-300));
                 simpsonRuleNintError[n] = Math.Log10(Math.Max(simpsonRuleNintError[n], 1e-300));
                 hitMissMonteCarloNintError[n] = Math.Log10(Math.Max(hitMissMonteCarloNintError[n], 1e-300));
-                traditionalMonteCarloNintError[n] = Math.Log10(Math.Max(traditionalMonteCarloNintError[n], 1e-300));
+                meanMonteCarloNintError[n] = Math.Log10(Math.Max(meanMonteCarloNintError[n], 1e-300));
             }
             HeldValues.RectangleEstimateErrorLog = rectangleNintError;
             HeldValues.TrapezoidEstimateErrorLog = trapeziaNintError;
             HeldValues.SimpsonEstimateErrorLog = simpsonRuleNintError;
             HeldValues.HitMissMonteCarloEstimateErrorLog = hitMissMonteCarloNintError;
-            HeldValues.TraditonalMonteCarloEstimateErrorLog = traditionalMonteCarloNintError;
+            HeldValues.MeanMonteCarloEstimateErrorLog = meanMonteCarloNintError;
+
+            //AAAAAAAA
+            HeldValues.midpointExplanation = (double[])midpointExplanationHolder.Clone();
+            simpsonExplanationHolder[N] = EvaluateFunction(new[] { xStart + N * step }, functionString)[0];
+            HeldValues.simpsonExplanation = (double[])simpsonExplanationHolder.Clone();
+            HeldValues.explanationX = (double[])explanationX.Clone();
+            HeldValues.finalStepN = step;
         }
     }
 }

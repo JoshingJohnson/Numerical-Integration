@@ -174,6 +174,34 @@ namespace Numerical_Integration.ViewModels
             get => _showBestestIntegral;
             set => this.RaiseAndSetIfChanged(ref _showBestestIntegral, value);
         }
+
+        private bool _showRectangleExplanation;
+        public bool ShowRectangleExplanation
+        {
+            get => _showRectangleExplanation;
+            set => this.RaiseAndSetIfChanged(ref _showRectangleExplanation, value);
+        }
+
+        private bool _showTrapeziaExplanation;
+        public bool ShowTrapeziaExplanation
+        {
+            get => _showTrapeziaExplanation;
+            set => this.RaiseAndSetIfChanged(ref _showTrapeziaExplanation, value);
+        }
+
+        private bool _showMonteCarloExplanation;
+        public bool ShowMonteCarloExplanation
+        {
+            get => _showMonteCarloExplanation;
+            set => this.RaiseAndSetIfChanged(ref _showMonteCarloExplanation, value);
+        }
+        private bool _showSimsponExplanation;
+        public bool ShowSimpsonExplanation
+        {
+            get => _showSimsponExplanation;
+            set => this.RaiseAndSetIfChanged(ref _showSimsponExplanation, value);
+        }
+
         public ReactiveCommand<Unit, FunctionInput[]> FunctionButton { get; }
         public ReactiveCommand<Unit, Unit> TogglePopupCommand { get; }
 

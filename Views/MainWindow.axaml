@@ -100,6 +100,10 @@
 								<CheckBox Content="Traditional Monte Carlo Error" IsChecked="{Binding ShowTraditionalError}"/>
 								<CheckBox Content="Traditional Monte Carlo Error Log" IsChecked="{Binding ShowTraditionalErrorLog}"/>
 								<CheckBox Content="Bestest Integral" IsChecked="{Binding ShowBestestIntegral}"/>
+								<CheckBox Content="Rectangle Explanation" IsChecked="{Binding ShowRectangleExplanation}"/>
+								<CheckBox Content="Trapezia Explanation" IsChecked="{Binding ShowTrapeziaExplanation}"/>
+								<CheckBox Content="Monte Carlo Explanation" IsChecked="{Binding ShowMonteCarloExplanation}"/>
+								<CheckBox Content="Simpson Explanation" IsChecked="{Binding ShowSimpsonExplanation}"/>
 							</StackPanel>
 						</Border>
 					</Popup>
